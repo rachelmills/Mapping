@@ -33,7 +33,8 @@ public class ProcessFile {
     private Path path;
     private Map<Integer, String> map;
 
-    private final static String OUTPUT_FILE_PATH = "/home/wikiprep/LMW-tree";
+//    private final static String OUTPUT_FILE_PATH = "/home/wikiprep/LMW-tree/";
+    private final static String OUTPUT_FILE_PATH = "/Users/rachelmills/Desktop/Clueweb/";
 
     public ProcessFile(Path path, Map<Integer, String> map) {
         try {
@@ -52,9 +53,12 @@ public class ProcessFile {
     }
 
     void processLineByLine() {
+        int count = 0;
         try (Scanner scanner = new Scanner(path, ENCODING.name())) {
             while (scanner.hasNextLine()) {
                 processLine(scanner.nextLine());
+                System.out.println("count = " + count);
+                count++;
             }
         } catch (IOException ex) {
             Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
@@ -77,13 +81,8 @@ public class ProcessFile {
 
         int cluster = sc.nextInt();
 
-        // search map for id
-        for (Integer i : map.keySet()) {
-            if (id == i) {
-                title = map.get(i);
-                break;
-            }
-        }
+        // find id in map
+        title = map.get(id);
 
         try {
             bufferedWriter.write(id + ", " + title + ", " + cluster + "\n");
