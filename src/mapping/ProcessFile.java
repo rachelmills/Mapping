@@ -14,6 +14,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -30,44 +31,44 @@ public class ProcessFile {
     private FileOutputStream out;
     private BufferedWriter bufferedWriter;
 
-    private Path path;
+    private final Path path;
     private Map<Integer, String> map;
+    private Map<String, Integer> spamMap;
+    private final Map<Integer, Frequency> frequencyMap;
 
-//    private final static String OUTPUT_FILE_PATH = "/home/wikiprep/LMW-tree/";
-    private final static String OUTPUT_FILE_PATH = "/Users/rachelmills/Desktop/Clueweb/";
-
-    public ProcessFile(Path path, Map<Integer, String> map) {
-        try {
-            out = new FileOutputStream(OUTPUT_FILE_PATH + "mapped_clusters.txt");
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-        try {
-            bufferedWriter = new BufferedWriter(new OutputStreamWriter(out, "UTF8"));
-        } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public ProcessFile(Path path, String outputPath) {
+//        try {
+//            out = new FileOutputStream(outputPath + "ClusterSpamPercentage.txt");
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//
+//        try {
+//            bufferedWriter = new BufferedWriter(new OutputStreamWriter(out, "UTF8"));
+//        } catch (UnsupportedEncodingException ex) {
+//            Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         this.path = path;
-        this.map = map;
+        this.frequencyMap = new HashMap<>();
     }
 
-    void processLineByLine() {
-        int count = 0;
+    void processLineByLine(boolean spamMappingYesNo) {
         try (Scanner scanner = new Scanner(path, ENCODING.name())) {
             while (scanner.hasNextLine()) {
-                processLine(scanner.nextLine());
-                System.out.println("count = " + count);
-                count++;
+                if (spamMappingYesNo == false) {
+                    processLine(scanner.nextLine());
+                } else {
+                    processLineForSpamEval(scanner.nextLine());
+                }
             }
         } catch (IOException ex) {
             Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
         }
-        try {
-            bufferedWriter.close();
-        } catch (IOException ex) {
-            Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        try {
+//            bufferedWriter.close();
+//        } catch (IOException ex) {
+//            Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     private void processLine(String nextLine) {
@@ -78,11 +79,11 @@ public class ProcessFile {
 
         // extract and remove id from line
         int id = Integer.parseInt(sc.next().replaceAll("[^\\d]", ""));
-
+//        int id = Integer.valueOf(sc.nextInt());
         int cluster = sc.nextInt();
 
         // find id in map
-        title = map.get(id);
+        title = getMap().get(id);
 
         try {
             bufferedWriter.write(id + ", " + title + ", " + cluster + "\n");
@@ -90,6 +91,59 @@ public class ProcessFile {
         } catch (IOException ex) {
             Logger.getLogger(ProcessFile.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
 
+    private void processLineForSpamEval(String nextLine) {
+        int spamScore = 0;
+        Scanner sc = new Scanner(nextLine);
+        String cluewebId = sc.next();
+        int cluster = sc.nextInt();
+
+        if (spamMap.get(cluewebId) != null) {
+            spamScore = spamMap.get(cluewebId);
+            if (getFrequencyMap().containsKey(cluster)) {
+                int total = getFrequencyMap().get(cluster).getTotal() + spamScore;
+                int count = getFrequencyMap().get(cluster).getCount() + 1;
+                getFrequencyMap().put(cluster, new Frequency(total, count));
+            } else {
+                getFrequencyMap().put(cluster, new Frequency(spamScore, 1));
+            }
+//            System.out.println("Frequency Map = " + cluster + "Count:  " + getFrequencyMap().get(cluster).getCount() + "Total:  " + getFrequencyMap().get(cluster).getTotal());
+        }      
+    }
+
+    /**
+     * @return the map
+     */
+    public Map<Integer, String> getMap() {
+        return map;
+    }
+
+    /**
+     * @param map the map to set
+     */
+    public void setMap(Map<Integer, String> map) {
+        this.map = map;
+    }
+
+    /**
+     * @return the spamMap
+     */
+    public Map<String, Integer> getSpamMap() {
+        return spamMap;
+    }
+
+    /**
+     * @param spamMap the spamMap to set
+     */
+    public void setSpamMap(Map<String, Integer> spamMap) {
+        this.spamMap = spamMap;
+    }
+
+    /**
+     * @return the frequencyMap
+     */
+    public Map<Integer, Frequency> getFrequencyMap() {
+        return frequencyMap;
     }
 }
