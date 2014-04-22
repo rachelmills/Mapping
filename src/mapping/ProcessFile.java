@@ -102,7 +102,7 @@ public class ProcessFile {
         if (spamMap.get(cluewebId) != null) {
             spamScore = spamMap.get(cluewebId);
             if (getFrequencyMap().containsKey(cluster)) {
-                int total = getFrequencyMap().get(cluster).getTotal() + spamScore;
+                long total = getFrequencyMap().get(cluster).getTotal() + spamScore;
                 int count = getFrequencyMap().get(cluster).getCount() + 1;
                 getFrequencyMap().put(cluster, new Frequency(total, count));
             } else {

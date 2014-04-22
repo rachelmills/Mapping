@@ -13,9 +13,9 @@ package mapping;
 public class Frequency {
     
     private int count;
-    private int total;
+    private long total;
     
-    public Frequency(int total, int count) {
+    public Frequency(long total, int count) {
         this.count = count;
         this.total = total;
     }
@@ -37,14 +37,14 @@ public class Frequency {
     /**
      * @return the total
      */
-    public int getTotal() {
+    public long getTotal() {
         return total;
     }
 
     /**
      * @param total the total to set
      */
-    public void setTotal(int total) {
+    public void setTotal(long total) {
         this.total = total;
     }
     
